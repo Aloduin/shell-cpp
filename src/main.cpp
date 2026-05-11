@@ -1,40 +1,127 @@
 #include <iostream>
 #include <string>
+#include <vector>
+#include <unordered_set>
+#include <cstdlib>
+#include <sstream>
+#include <filesystem>
+#include <unistd.h>
 
-void isBuiltin(std::string command) {
-  if (command == "echo" || command == "exit" || command == "type") {
+
+bool is_builtin_command(const std::string& command) {
+  static const std::unordered_set<std::string> builtins = {
+    "exit",
+    "echo",
+    "type",
+};
+
+  if (builtins.find(command) != builtins.end()) return true;
+  return false;
+}
+
+std::vector<std::string> split_path(const std::string& path_env) {
+  std::vector<std::string> dirs;
+  std::stringstream ss(path_env);
+  std::string dir;
+
+  while (std::getline(ss, dir, ':')) {
+    if (!dir.empty()) {
+      dirs.push_back(dir);
+    }
+  }
+  return dirs;
+}
+
+bool is_executable_file(const std::filesystem::path& path) {
+  return (
+    std::filesystem::exists(path)
+    && std::filesystem::is_regular_file(path)
+    && access(path.c_str(), X_OK) == 0
+  );
+}
+
+void handle_type_command(const std::string& command) {
+  if (is_builtin_command(command)) {
     std::cout << command << " is a shell builtin" << std::endl;
+    return;
   }
-  else {
+
+  const char* path_env = std::getenv("PATH");
+  if (path_env == nullptr) {
     std::cout << command << ": not found" << std::endl;
+    return;
   }
+
+  std::vector<std::string> dirs = split_path(path_env);
+  for (const std::string& dir : dirs) {
+    std::filesystem::path full_path = std::filesystem::path(dir) / command;
+
+    if (is_executable_file(full_path)) {
+      std::cout << command << " is " << full_path.string() << std::endl;
+      return;
+    }
+  }
+
+  std::cout << command << ": not found" << std::endl;
+}
+
+void handle_echo_command(std::stringstream& ss) {
+    std::string rest;
+    std::getline(ss, rest);
+
+    if (!rest.empty() && rest[0] == ' ') {
+        rest.erase(0, 1);
+    }
+
+    std::cout << rest << std::endl;
+}
+
+void handle_input(const std::string& input) {
+    std::stringstream ss(input);
+
+    std::string command;
+    ss >> command;
+
+    if (command.empty()) {
+        return;
+    }
+
+    if (command == "exit") {
+        std::exit(0);
+    }
+
+    if (command == "echo") {
+        handle_echo_command(ss);
+        return;
+    }
+
+    if (command == "type") {
+        std::string target;
+        ss >> target;
+
+        if (!target.empty()) {
+            handle_type_command(target);
+        }
+
+        return;
+    }
+
+    std::cout << command << ": command not found" << std::endl;
 }
 
 int main() {
-  // Flush after every std::cout / std:cerr
-  std::cout << std::unitbuf;
-  std::cerr << std::unitbuf;
+    std::string input;
 
-  while (true) {
-    // TODO: Uncomment the code below to pass the first stage
-    std::cout << "$ ";
+    while (true) {
+        std::cout << "$ ";
+        std::cout.flush();
 
-    // Captures the user's command in the "command" variable
-    std::string command;
-    std::getline(std::cin, command);
+        if (!std::getline(std::cin, input)) {
+            break;
+        }
 
-    if (command == "exit") break;
-
-    if (command.substr(0, 5) == "echo ") {
-      std::cout << command.substr(5) << std::endl;
-    }
-    else if (command.substr(0, 5) == "type ") {
-      isBuiltin(command.substr(5));
-    }
-    else {
-      // Prints the {command}: command not found
-      std::cout << command << ": command not found" << std::endl;
+        handle_input(input);
     }
 
-  }
+    return 0;
 }
