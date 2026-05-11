@@ -2,7 +2,7 @@
 #include <string>
 
 void isBuiltin(std::string command) {
-  if (command == "echo" || command == "exit") {
+  if (command == "echo" || command == "exit" || command == "type") {
     std::cout << command << " is a shell builtin" << std::endl;
   }
   else {
