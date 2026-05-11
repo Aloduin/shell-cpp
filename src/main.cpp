@@ -1,6 +1,15 @@
 #include <iostream>
 #include <string>
 
+void isBuiltin(std::string command) {
+  if (command == "echo" || command == "exit") {
+    std::cout << command << " is a shell builtin" << std::endl;
+  }
+  else {
+    std::cout << command << ": not found" << std::endl;
+  }
+}
+
 int main() {
   // Flush after every std::cout / std:cerr
   std::cout << std::unitbuf;
@@ -18,6 +27,9 @@ int main() {
 
     if (command.substr(0, 5) == "echo ") {
       std::cout << command.substr(5) << std::endl;
+    }
+    else if (command.substr(0, 5) == "type ") {
+      isBuiltin(command.substr(5));
     }
     else {
       // Prints the {command}: command not found
