@@ -6,6 +6,8 @@
 #include <string>
 #include <unordered_map>
 #include <vector>
+#include <filesystem>
+#include <unistd.h>
 
 #include "utils.hpp"
 
@@ -59,6 +61,18 @@ void handle_type_command(const std::vector<std::string> &args)
     std::cout << target << ": not found" << std::endl;
 }
 
+void handle_cd_command(const std::vector<std::string>& args) {
+    if (args.size() < 2) {
+        return;
+    }
+
+    const std::string& path = args[1];
+
+    if (chdir(path.c_str()) != 0) {
+        std::cout << "cd: " << path << ": No such file or directory" << std::endl;
+    }
+}
+
 void handle_pwd_command(const std::vector<std::string>& args) {
     std::cout << std::filesystem::current_path().string() << std::endl;
 }
@@ -68,7 +82,8 @@ const std::unordered_map<std::string, BuiltinHandler>& builtin_table() {
         {"echo", handle_echo_command},
         {"exit", handle_exit_command},
         {"type", handle_type_command},
-        {"pwd", handle_pwd_command}
+        {"pwd", handle_pwd_command},
+        {"cd", handle_cd_command}
     };
 }
 } //namespace
