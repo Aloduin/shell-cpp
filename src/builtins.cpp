@@ -1,26 +1,23 @@
 #include "builtins.hpp"
 
 #include <cstdlib>
+#include <filesystem>
 #include <functional>
 #include <iostream>
 #include <string>
 #include <unordered_map>
 #include <vector>
-#include <filesystem>
 #include <unistd.h>
 
 #include "utils.hpp"
 
-using BuiltinHandler = std::function<void(const std::vector<std::string> &)>;
+using BuiltinHandler = std::function<void(const std::vector<std::string>&)>;
 
-namespace
-{
-void handle_echo_command(const std::vector<std::string> &args)
-{
-    for (size_t i = 1; i < args.size(); i++)
-    {
-        if (i > 1)
-        {
+namespace {
+
+void handle_echo_command(const std::vector<std::string>& args) {
+    for (size_t i = 1; i < args.size(); i++) {
+        if (i > 1) {
             std::cout << " ";
         }
 
@@ -30,30 +27,25 @@ void handle_echo_command(const std::vector<std::string> &args)
     std::cout << std::endl;
 }
 
-void handle_exit_command(const std::vector<std::string> &args)
-{
+void handle_exit_command(const std::vector<std::string>& args) {
     std::exit(0);
 }
 
-void handle_type_command(const std::vector<std::string> &args)
-{
-    if (args.size() < 2)
-    {
+void handle_type_command(const std::vector<std::string>& args) {
+    if (args.size() < 2) {
         return;
     }
 
-    const std::string &target = args[1];
+    const std::string& target = args[1];
 
-    if (is_builtin_command(target))
-    {
-        std::cout << target << " is a builtin" << std::endl;
+    if (is_builtin_command(target)) {
+        std::cout << target << " is a shell builtin" << std::endl;
         return;
     }
 
     std::string executable_path = find_executable(target);
 
-    if (!executable_path.empty())
-    {
+    if (!executable_path.empty()) {
         std::cout << target << " is " << executable_path << std::endl;
         return;
     }
@@ -82,11 +74,14 @@ const std::unordered_map<std::string, BuiltinHandler>& builtin_table() {
         {"echo", handle_echo_command},
         {"exit", handle_exit_command},
         {"type", handle_type_command},
+        {"cd", handle_cd_command},
         {"pwd", handle_pwd_command},
-        {"cd", handle_cd_command}
     };
+
+    return table;
 }
-} //namespace
+
+} // namespace
 
 bool is_builtin_command(const std::string& command) {
     const auto& table = builtin_table();
