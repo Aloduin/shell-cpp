@@ -11,7 +11,7 @@ namespace
 {
 
 void print_prompt() {
-  std::cout << "$";
+  std::cout << "$ ";
   std::cout.flush();
 }
 
