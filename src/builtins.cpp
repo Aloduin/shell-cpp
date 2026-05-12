@@ -27,10 +27,6 @@ void handle_echo_command(const std::vector<std::string>& args) {
     std::cout << std::endl;
 }
 
-void handle_exit_command(const std::vector<std::string>& args) {
-    std::exit(0);
-}
-
 void handle_type_command(const std::vector<std::string>& args) {
     if (args.size() < 2) {
         return;
@@ -65,7 +61,11 @@ void handle_cd_command(const std::vector<std::string>& args) {
     }
 }
 
-void handle_pwd_command(const std::vector<std::string>& args) {
+void handle_exit_command(const std::vector<std::string>& /*args*/) {
+    std::exit(0);
+}
+
+void handle_pwd_command(const std::vector<std::string>& /*args*/) {
     std::cout << std::filesystem::current_path().string() << std::endl;
 }
 
