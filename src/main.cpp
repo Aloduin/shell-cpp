@@ -6,40 +6,41 @@
 #include "executor.hpp"
 #include "utils.hpp"
 
-
-namespace
-{
+namespace {
 
 void print_prompt() {
-  std::cout << "$ ";
-  std::cout.flush();
+    std::cout << "$ ";
+    std::cout.flush();
 }
 
 void handle_input(const std::string& input) {
-  std::vector<std::string> args = split_input(input);
-  
-  if (args.empty()) {
-    return;
-  }
+    std::vector<std::string> args = split_input(input);
 
-  if (execute_builtin_command(args)) {
-    return;
-  }
+    if (args.empty()) {
+        return;
+    }
 
-  execute_external_command(args);
+    if (execute_builtin_command(args)) {
+        return;
+    }
+
+    execute_external_command(args);
 }
-} //namespace
+
+} // namespace
 
 int main() {
-  std::string input;
+    std::string input;
 
-  while(true) {
-    print_prompt();
+    while (true) {
+        print_prompt();
 
-    if (!std::getline(std::cin, input)) {
-      break;
+        if (!std::getline(std::cin, input)) {
+            break;
+        }
+
+        handle_input(input);
     }
-  }
 
-  return 0;
+    return 0;
 }
