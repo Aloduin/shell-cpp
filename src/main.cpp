@@ -154,6 +154,10 @@ void handle_echo_command(const std::vector<std::string>& args) {
   std::cout << std::endl;
 }
 
+void handle_pwd_command(const std::vector<std::string>& args) {
+  std::cout << std::filesystem::current_path().string() << std::endl;
+}
+
 void handle_input(const std::string& input) {
     std::vector<std::string> args = split_input(input);
 
@@ -177,6 +181,11 @@ void handle_input(const std::string& input) {
             handle_type_command(args[1]);
         }
         return;
+    }
+
+    if (command == "pwd") {
+      handle_pwd_command(args);
+      return;
     }
 
     execute_external_command(args);
