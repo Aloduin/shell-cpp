@@ -14,6 +14,7 @@ bool is_builtin_command(const std::string& command) {
     "exit",
     "echo",
     "type",
+    "pwd"
 };
 
   return builtins.find(command) != builtins.end();
