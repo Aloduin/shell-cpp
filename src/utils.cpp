@@ -4,37 +4,71 @@
 #include <sstream>
 #include <unistd.h>
 
-std::vector<std::string> split_input(const std::string &input)
+std::vector<std::string> split_input(const std::string& input)
 {
     std::vector<std::string> args;
     std::string current;
 
-    bool in_single_quote = false;
+    enum class QuoteState
+    {
+        NONE,
+        SINGLE,
+        DOUBLE
+    };
+
+    QuoteState state = QuoteState::NONE;
+
     bool has_token = false;
 
     for (char c : input)
     {
-        if (c == '\'')
+        if (c == '\'' && state != QuoteState::DOUBLE)
         {
-            in_single_quote = !in_single_quote;
+            if (state == QuoteState::SINGLE)
+            {
+                state = QuoteState::NONE;
+            }
+            else
+            {
+                state = QuoteState::SINGLE;
+            }
+
+            has_token = true;
+        }
+        else if (c == '"' && state != QuoteState::SINGLE)
+        {
+            if (state == QuoteState::DOUBLE)
+            {
+                state = QuoteState::NONE;
+            }
+            else
+            {
+                state = QuoteState::DOUBLE;
+            }
+
             has_token = true;
         }
         else if (
-            std::isspace(static_cast<unsigned char>(c)) && !in_single_quote
-        ) {
-            if (has_token) {
+            std::isspace(static_cast<unsigned char>(c))
+            && state == QuoteState::NONE
+        )
+        {
+            if (has_token)
+            {
                 args.push_back(current);
                 current.clear();
                 has_token = false;
             }
         }
-        else {
+        else
+        {
             current += c;
             has_token = true;
         }
     }
 
-    if (has_token) {
+    if (has_token)
+    {
         args.push_back(current);
     }
 
