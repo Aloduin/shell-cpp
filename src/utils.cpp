@@ -7,12 +7,35 @@
 std::vector<std::string> split_input(const std::string &input)
 {
     std::vector<std::string> args;
-    std::stringstream ss(input);
-    std::string arg;
+    std::string current;
 
-    while (ss >> arg)
+    bool in_single_quote = false;
+    bool has_token = false;
+
+    for (char c : input)
     {
-        args.push_back(arg);
+        if (c == '\'')
+        {
+            in_single_quote = !in_single_quote;
+            has_token = true;
+        }
+        else if (
+            std::isspace(static_cast<unsigned char>(c)) && !in_single_quote
+        ) {
+            if (has_token) {
+                args.push_back(current);
+                current.clear();
+                has_token = false;
+            }
+        }
+        else {
+            current += c;
+            has_token = true;
+        }
+    }
+
+    if (has_token) {
+        args.push_back(current);
     }
 
     return args;
