@@ -1048,3 +1048,5 @@ vcpkg_installed
 
 
 src/output/
+build-gpp
+build-gpp/

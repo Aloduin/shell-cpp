@@ -56,6 +56,16 @@ void handle_cd_command(const std::vector<std::string>& args) {
 
     const std::string& path = args[1];
 
+    if (path == "~") {
+        const char* home = std::getenv("HOME");
+        if (home) {
+            chdir(home);
+        } else {
+            std::cerr << "cd: HOME environment variable not set" << std::endl;
+        }
+        return;
+    }
+
     if (chdir(path.c_str()) != 0) {
         std::cout << "cd: " << path << ": No such file or directory" << std::endl;
     }
