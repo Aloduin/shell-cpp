@@ -19,10 +19,27 @@ std::vector<std::string> split_input(const std::string& input)
     QuoteState state = QuoteState::NONE;
 
     bool has_token = false;
+    bool escaped = false;
 
     for (char c : input)
     {
-        if (c == '\'' && state != QuoteState::DOUBLE)
+        // 上一个字符是反斜杠
+        if (escaped)
+        {
+            current += c;
+            has_token = true;
+            escaped = false;
+        }
+
+        // 处理反斜杠
+        else if (c == '\\' && state != QuoteState::SINGLE)
+        {
+            escaped = true;
+            has_token = true;
+        }
+
+        // 单引号
+        else if (c == '\'' && state != QuoteState::DOUBLE)
         {
             if (state == QuoteState::SINGLE)
             {
@@ -35,6 +52,8 @@ std::vector<std::string> split_input(const std::string& input)
 
             has_token = true;
         }
+
+        // 双引号
         else if (c == '"' && state != QuoteState::SINGLE)
         {
             if (state == QuoteState::DOUBLE)
@@ -48,6 +67,8 @@ std::vector<std::string> split_input(const std::string& input)
 
             has_token = true;
         }
+
+        // 空格分隔
         else if (
             std::isspace(static_cast<unsigned char>(c))
             && state == QuoteState::NONE
@@ -60,6 +81,8 @@ std::vector<std::string> split_input(const std::string& input)
                 has_token = false;
             }
         }
+
+        // 普通字符
         else
         {
             current += c;
