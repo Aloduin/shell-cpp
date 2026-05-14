@@ -1,5 +1,7 @@
+#include <fcntl.h>
 #include <iostream>
 #include <string>
+#include <unistd.h>
 #include <vector>
 
 #include "builtins.hpp"
@@ -14,17 +16,43 @@ void print_prompt() {
 }
 
 void handle_input(const std::string& input) {
-    std::vector<std::string> args = split_input(input);
+    ParsedCommand cmd = parse_command(input);
 
-    if (args.empty()) {
+    if (cmd.args.empty()) {
         return;
     }
 
-    if (execute_builtin_command(args)) {
-        return;
+    int saved_stdout = -1;
+
+    if (cmd.redirect_stdout) {
+        saved_stdout = dup(STDOUT_FILENO);
+
+        int fd = open(
+            cmd.stdout_file.c_str(),
+            O_WRONLY | O_CREAT | O_TRUNC,
+            0644
+        );
+
+        if (fd == -1) {
+            std::cerr << "Failed to open file: "
+                      << cmd.stdout_file << std::endl;
+            return;
+        }
+
+        dup2(fd, STDOUT_FILENO);
+        close(fd);
     }
 
-    execute_external_command(args);
+    if (!execute_builtin_command(cmd.args)) {
+        execute_external_command(cmd.args);
+    }
+
+    if (cmd.redirect_stdout) {
+        std::cout.flush();
+
+        dup2(saved_stdout, STDOUT_FILENO);
+        close(saved_stdout);
+    }
 }
 
 } // namespace

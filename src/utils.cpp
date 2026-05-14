@@ -1,5 +1,6 @@
 #include "utils.hpp"
 
+#include <cctype>
 #include <cstdlib>
 #include <sstream>
 #include <unistd.h>
@@ -142,4 +143,39 @@ std::string find_executable(const std::string &command)
     }
 
     return "";
+}
+
+ParsedCommand parse_command(const std::string &input)
+{
+    std::vector<std::string> tokens = split_input(input);
+
+    ParsedCommand cmd;
+
+    for (size_t i = 0; i < tokens.size(); i++)
+    {
+        const std::string &token = tokens[i];
+
+        if ((token == ">" || token == "1>") && i + 1 < tokens.size())
+        {
+            cmd.redirect_stdout = true;
+            cmd.stdout_file = tokens[i + 1];
+            i++;
+        }
+        else if (token.size() > 1 && token[0] == '>')
+        {
+            cmd.redirect_stdout = true;
+            cmd.stdout_file = token.substr(1);
+        }
+        else if (token.size() > 2 && token.rfind("1>", 0) == 0)
+        {
+            cmd.redirect_stdout = true;
+            cmd.stdout_file = token.substr(2);
+        }
+        else
+        {
+            cmd.args.push_back(token);
+        }
+    }
+
+    return cmd;
 }
