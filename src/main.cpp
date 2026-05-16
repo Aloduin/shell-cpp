@@ -23,6 +23,7 @@ void handle_input(const std::string& input) {
     }
 
     int saved_stdout = -1;
+    int saved_stderr = -1;
 
     if (cmd.redirect_stdout) {
         saved_stdout = dup(STDOUT_FILENO);
@@ -43,15 +44,45 @@ void handle_input(const std::string& input) {
         close(fd);
     }
 
+    if (cmd.redirect_stderr) {
+        saved_stderr = dup(STDERR_FILENO);
+
+        int fd = open(
+            cmd.stderr_file.c_str(),
+            O_WRONLY | O_CREAT | O_TRUNC,
+            0644
+        );
+
+        if (fd == -1) {
+            std::cerr << "Failed to open file: "
+                      << cmd.stderr_file << std::endl;
+
+            if (cmd.redirect_stdout) {
+                dup2(saved_stdout, STDOUT_FILENO);
+                close(saved_stdout);
+            }
+
+            return;
+        }
+
+        dup2(fd, STDERR_FILENO);
+        close(fd);
+    }
+
     if (!execute_builtin_command(cmd.args)) {
         execute_external_command(cmd.args);
     }
 
     if (cmd.redirect_stdout) {
         std::cout.flush();
-
         dup2(saved_stdout, STDOUT_FILENO);
         close(saved_stdout);
+    }
+
+    if (cmd.redirect_stderr) {
+        std::cerr.flush();
+        dup2(saved_stderr, STDERR_FILENO);
+        close(saved_stderr);
     }
 }
 

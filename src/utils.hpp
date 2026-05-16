@@ -7,8 +7,12 @@
 struct ParsedCommand
 {
     std::vector<std::string> args;
+
     std::string stdout_file;
     bool redirect_stdout = false;
+
+    std::string stderr_file;
+    bool redirect_stderr = false;
 };
 
 std::vector<std::string> split_path(const std::string &path_env);

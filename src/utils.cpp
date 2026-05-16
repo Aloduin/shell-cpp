@@ -161,6 +161,12 @@ ParsedCommand parse_command(const std::string &input)
             cmd.stdout_file = tokens[i + 1];
             i++;
         }
+        else if (token == "2>" && i + 1 < tokens.size())
+        {
+            cmd.redirect_stderr = true;
+            cmd.stderr_file = tokens[i + 1];
+            i++;
+        }
         else if (token.size() > 1 && token[0] == '>')
         {
             cmd.redirect_stdout = true;
@@ -170,6 +176,11 @@ ParsedCommand parse_command(const std::string &input)
         {
             cmd.redirect_stdout = true;
             cmd.stdout_file = token.substr(2);
+        }
+        else if (token.size() > 2 && token.rfind("2>", 0) == 0)
+        {
+            cmd.redirect_stderr = true;
+            cmd.stderr_file = token.substr(2);
         }
         else
         {
