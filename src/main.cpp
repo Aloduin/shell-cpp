@@ -28,15 +28,23 @@ void handle_input(const std::string& input) {
     if (cmd.redirect_stdout) {
         saved_stdout = dup(STDOUT_FILENO);
 
+        int flags = O_WRONLY | O_CREAT;
+
+        if (cmd.append_stdout) {
+            flags |= O_APPEND;
+        } else {
+            flags |= O_TRUNC;
+        }
+
         int fd = open(
             cmd.stdout_file.c_str(),
-            O_WRONLY | O_CREAT | O_TRUNC,
+            flags,
             0644
         );
 
         if (fd == -1) {
             std::cerr << "Failed to open file: "
-                      << cmd.stdout_file << std::endl;
+                    << cmd.stdout_file << std::endl;
             return;
         }
 
@@ -55,7 +63,7 @@ void handle_input(const std::string& input) {
 
         if (fd == -1) {
             std::cerr << "Failed to open file: "
-                      << cmd.stderr_file << std::endl;
+                    << cmd.stderr_file << std::endl;
 
             if (cmd.redirect_stdout) {
                 dup2(saved_stdout, STDOUT_FILENO);

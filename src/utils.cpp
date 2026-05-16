@@ -158,6 +158,14 @@ ParsedCommand parse_command(const std::string &input)
         if ((token == ">" || token == "1>") && i + 1 < tokens.size())
         {
             cmd.redirect_stdout = true;
+            cmd.append_stdout = false;
+            cmd.stdout_file = tokens[i + 1];
+            i++;
+        }
+        else if ((token == ">>" || token == "1>>") && i + 1 < tokens.size())
+        {
+            cmd.redirect_stdout = true;
+            cmd.append_stdout = true;
             cmd.stdout_file = tokens[i + 1];
             i++;
         }
@@ -167,15 +175,29 @@ ParsedCommand parse_command(const std::string &input)
             cmd.stderr_file = tokens[i + 1];
             i++;
         }
-        else if (token.size() > 1 && token[0] == '>')
+        else if (token.size() > 2 && token.rfind("1>>", 0) == 0)
         {
             cmd.redirect_stdout = true;
-            cmd.stdout_file = token.substr(1);
+            cmd.append_stdout = true;
+            cmd.stdout_file = token.substr(3);
+        }
+        else if (token.size() > 2 && token.rfind(">>", 0) == 0)
+        {
+            cmd.redirect_stdout = true;
+            cmd.append_stdout = true;
+            cmd.stdout_file = token.substr(2);
         }
         else if (token.size() > 2 && token.rfind("1>", 0) == 0)
         {
             cmd.redirect_stdout = true;
+            cmd.append_stdout = false;
             cmd.stdout_file = token.substr(2);
+        }
+        else if (token.size() > 1 && token[0] == '>')
+        {
+            cmd.redirect_stdout = true;
+            cmd.append_stdout = false;
+            cmd.stdout_file = token.substr(1);
         }
         else if (token.size() > 2 && token.rfind("2>", 0) == 0)
         {

@@ -10,6 +10,7 @@ struct ParsedCommand
 
     std::string stdout_file;
     bool redirect_stdout = false;
+    bool append_stdout = false;
 
     std::string stderr_file;
     bool redirect_stderr = false;
